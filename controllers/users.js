@@ -123,10 +123,42 @@ async function deleteUserByID(call, callback) {
   }
 }
 
+async function getUserByUsername(call, callback) {
+  const { username, deleted } = call.request;
+  try {
+    const schema = Joi.object().keys({
+      username: Joi.string().required(),
+      deleted: Joi.bool().optional(),
+    });
+    const validation = Joi.validate(call.request, schema);
+    if (validation.error !== null) throw new Error(validation.error.details[0].message);
+
+    const match = {};
+    if (username !== undefined) match.username = username;
+    if (deleted !== undefined) match.deleted = deleted;
+
+    const data = await User.findOne(match);
+
+    if (!data) {
+      callback(null, { error: 'User not found' });
+      return;
+    }
+
+    callback(null, {
+      success: true,
+      data: JSON.stringify(data),
+    });
+  } catch (error) {
+    console.error(error);
+    callback(error);
+  }
+}
+
 module.exports = {
   getAllUsers,
   getUserByID,
   deleteUserByID,
   createUser,
   updateUser,
+  getUserByUsername,
 };

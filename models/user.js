@@ -6,7 +6,9 @@ mongoose.Promise = global.Promise;
 
 const UserSchema = new Schema(
   {
-    username: { type: String, required: true, unique: true },
+    username: {
+      type: String, required: true, unique: true, index: true,
+    },
   },
   { timestamps: true },
 );

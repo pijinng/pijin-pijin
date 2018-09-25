@@ -6,8 +6,10 @@ const users = require('./controllers/users');
 
 const server = new grpc.Server();
 const packageDefinition = protoLoader.loadSync(process.env.PROTO_LOCATION);
-const appService = grpc.loadPackageDefinition(packageDefinition).pijin.Pijin.service;
-server.addService(appService, users);
+const { service } = grpc.loadPackageDefinition(packageDefinition).pijin.Pijin;
+
+server.addService(service, users);
+
 server.bind(`0.0.0.0:${process.env.SERVICE_PORT}`, grpc.ServerCredentials.createInsecure());
 server.start();
-console.info(`Pijin Pijin service started successfully on 0.0.0.0:${process.env.SERVICE_PORT}`);
+console.info(`Pijin Pijin service started successfully on port ${process.env.SERVICE_PORT}`);
