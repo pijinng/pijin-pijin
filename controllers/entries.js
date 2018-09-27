@@ -21,7 +21,7 @@ async function createEntry(call, callback) {
         author: Joi.string().required(),
       })
       .unknown(true);
-    const validation = Joi.validate({ ...call.request, ...tagsList }, schema);
+    const validation = Joi.validate({ ...call.request, tagsList }, schema);
     if (validation.error !== null) throw new Error(validation.error.details[0].message);
 
     const data = new Entry();
@@ -100,16 +100,20 @@ async function updateEntry(call, callback) {
   } = call.request;
 
   try {
-    const schema = Joi.object().keys({
-      id: Joi.string().required(),
-      name: Joi.string(),
-      meaning: Joi.string(),
-      example: Joi.string(),
-      tags: Joi.array().items(Joi.string()),
-      image: Joi.string().uri(),
-    });
+    const tagsList = JSON.parse(tags);
 
-    const validation = Joi.validate(call.request, schema);
+    const schema = Joi.object()
+      .keys({
+        id: Joi.string().required(),
+        name: Joi.string(),
+        meaning: Joi.string(),
+        example: Joi.string(),
+        tagsList: Joi.array().items(Joi.string()),
+        image: Joi.string().uri(),
+      })
+      .unknown(true);
+
+    const validation = Joi.validate({ ...call.request, tagsList }, schema);
     if (validation.error !== null) throw new Error(validation.error.details[0].message);
 
     const data = await Entry.findById(id);
@@ -122,7 +126,7 @@ async function updateEntry(call, callback) {
     if (name !== undefined) data.name = name;
     if (meaning !== undefined) data.meaning = meaning;
     if (example !== undefined) data.example = example;
-    if (tags !== undefined) data.tags = tags;
+    if (tagsList !== undefined) data.tags = tagsList;
     if (image !== undefined) data.image = image;
     await data.save();
 
