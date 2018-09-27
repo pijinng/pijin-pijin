@@ -47,7 +47,6 @@ async function getUserByID(call, callback) {
     }
 
     callback(null, {
-      success: true,
       data: JSON.stringify(data),
     });
   } catch (error) {
@@ -92,7 +91,7 @@ async function updateUser(call, callback) {
     const data = await User.findById(id);
 
     if (!data) {
-      callback(null, { success: false, message: 'Not found' });
+      callback(null, { error: 'User not found' });
       return;
     }
 
@@ -145,7 +144,6 @@ async function getUserByUsername(call, callback) {
     }
 
     callback(null, {
-      success: true,
       data: JSON.stringify(data),
     });
   } catch (error) {
