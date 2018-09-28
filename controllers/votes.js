@@ -1,36 +1,28 @@
 const Joi = require('joi');
 const db = require('../config/db');
 
-const Entry = db.models.entry;
+const Vote = db.models.vote;
 
-async function createEntry(call, callback) {
-  const {
-    name, meaning, example, tags, image, author,
-  } = call.request;
+async function createVote(call, callback) {
+  const { voter, entry, type } = call.request;
 
   try {
-    const tagsList = JSON.parse(tags);
-
     const schema = Joi.object()
       .keys({
-        name: Joi.string().required(),
-        meaning: Joi.string().required(),
-        example: Joi.string(),
-        tagsList: Joi.array().items(Joi.string()),
-        image: Joi.string().uri(),
-        author: Joi.string().required(),
+        voter: Joi.string().required(),
+        entry: Joi.string().required(),
+        type: Joi.string()
+          .valid(['up', 'down'])
+          .required(),
       })
       .unknown(true);
-    const validation = Joi.validate({ ...call.request, tagsList }, schema);
+    const validation = Joi.validate(call.request, schema);
     if (validation.error !== null) throw new Error(validation.error.details[0].message);
 
-    const data = new Entry();
-    if (name !== undefined) data.name = name;
-    if (meaning !== undefined) data.meaning = meaning;
-    if (example !== undefined) data.example = example;
-    if (tagsList !== undefined) data.tags = tagsList;
-    if (image !== undefined) data.image = image;
-    if (author !== undefined) data.author = author;
+    const data = new Vote();
+    if (voter !== undefined) data.voter = voter;
+    if (entry !== undefined) data.entry = entry;
+    if (type !== undefined) data.type = type;
 
     await data.save();
 
@@ -41,7 +33,7 @@ async function createEntry(call, callback) {
   }
 }
 
-async function getEntryByID(call, callback) {
+async function getVoteByID(call, callback) {
   const { id, deleted } = call.request;
   try {
     const schema = Joi.object().keys({
@@ -55,10 +47,10 @@ async function getEntryByID(call, callback) {
     if (id !== undefined) match._id = id;
     if (deleted !== undefined) match.deleted = deleted;
 
-    const data = await Entry.findOne(match);
+    const data = await Vote.findOne(match);
 
     if (!data) {
-      callback(null, { error: 'Entry not found' });
+      callback(null, { error: 'Vote not found' });
       return;
     }
 
@@ -71,22 +63,30 @@ async function getEntryByID(call, callback) {
   }
 }
 
-async function getAllEntries(call, callback) {
-  const { author, deleted } = call.request;
+async function getAllVotes(call, callback) {
+  const {
+    voter, entry, type, deleted,
+  } = call.request;
 
   try {
     const schema = Joi.object().keys({
-      author: Joi.string(),
+      voter: Joi.string().optional(),
+      entry: Joi.string().optional(),
+      type: Joi.string()
+        .valid(['up', 'down'])
+        .optional(),
       deleted: Joi.bool(),
     });
     const validation = Joi.validate(call.request, schema);
     if (validation.error !== null) throw new Error(validation.error.details[0].message);
 
     const match = {};
-    if (author !== undefined) match.author = author;
+    if (voter !== undefined) match.voter = voter;
+    if (entry !== undefined) match.entry = entry;
+    if (type !== undefined) match.type = type;
     if (deleted !== undefined) match.deleted = deleted;
 
-    const data = await Entry.find(match);
+    const data = await Vote.find(match);
     callback(null, { data: JSON.stringify(data) });
   } catch (error) {
     console.error(error);
@@ -94,40 +94,36 @@ async function getAllEntries(call, callback) {
   }
 }
 
-async function updateEntry(call, callback) {
+async function updateVote(call, callback) {
   const {
-    id, name, meaning, example, tags, image,
+    id, voter, entry, type,
   } = call.request;
 
   try {
-    const tagsList = JSON.parse(tags);
-
     const schema = Joi.object()
       .keys({
         id: Joi.string().required(),
-        name: Joi.string(),
-        meaning: Joi.string(),
-        example: Joi.string(),
-        tagsList: Joi.array().items(Joi.string()),
-        image: Joi.string().uri(),
+        voter: Joi.string().optional(),
+        entry: Joi.string().optional(),
+        type: Joi.string()
+          .valid(['up', 'down'])
+          .optional(),
       })
       .unknown(true);
 
-    const validation = Joi.validate({ ...call.request, tagsList }, schema);
+    const validation = Joi.validate(call.request, schema);
     if (validation.error !== null) throw new Error(validation.error.details[0].message);
 
-    const data = await Entry.findById(id);
+    const data = await Vote.findById(id);
 
     if (!data) {
-      callback(null, { error: 'Entry not found' });
+      callback(null, { error: 'Vote not found' });
       return;
     }
 
-    if (name !== undefined) data.name = name;
-    if (meaning !== undefined) data.meaning = meaning;
-    if (example !== undefined) data.example = example;
-    if (tagsList !== undefined) data.tags = tagsList;
-    if (image !== undefined) data.image = image;
+    if (voter !== undefined) data.voter = voter;
+    if (entry !== undefined) data.entry = entry;
+    if (type !== undefined) data.type = type;
     await data.save();
 
     callback(null, { data: JSON.stringify(data) });
@@ -137,7 +133,7 @@ async function updateEntry(call, callback) {
   }
 }
 
-async function deleteEntryByID(call, callback) {
+async function deleteVoteByID(call, callback) {
   const { id } = call.request;
 
   try {
@@ -145,7 +141,7 @@ async function deleteEntryByID(call, callback) {
     const validation = Joi.validate(call.request, schema);
     if (validation.error !== null) throw new Error(validation.error.details[0].message);
 
-    await Entry.delete({ _id: id });
+    await Vote.delete({ _id: id });
 
     callback(null, {});
   } catch (err) {
@@ -155,9 +151,9 @@ async function deleteEntryByID(call, callback) {
 }
 
 module.exports = {
-  getAllEntries,
-  getEntryByID,
-  deleteEntryByID,
-  createEntry,
-  updateEntry,
+  getAllVotes,
+  getVoteByID,
+  deleteVoteByID,
+  createVote,
+  updateVote,
 };

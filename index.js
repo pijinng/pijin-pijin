@@ -4,12 +4,13 @@ require('dotenv').config();
 
 const users = require('./controllers/users');
 const entries = require('./controllers/entries');
+const votes = require('./controllers/votes');
 
 const server = new grpc.Server();
 const packageDefinition = protoLoader.loadSync(process.env.PROTO_LOCATION);
 const { service } = grpc.loadPackageDefinition(packageDefinition).pijin.Pijin;
 
-server.addService(service, { ...users, ...entries });
+server.addService(service, { ...users, ...entries, ...votes });
 
 server.bind(`0.0.0.0:${process.env.SERVICE_PORT}`, grpc.ServerCredentials.createInsecure());
 server.start();

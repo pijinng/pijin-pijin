@@ -21,5 +21,6 @@ connection.db = mongoose.createConnection(process.env.MONGO_URL, MONGO_CONFIG, (
 connection.models = {};
 connection.models.user = connection.db.model('User', schemas.UserSchema);
 connection.models.entry = connection.db.model('Entry', schemas.EntrySchema);
+connection.models.vote = connection.db.model('Vote', schemas.VoteSchema);
 
 module.exports = connection;
